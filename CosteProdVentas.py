@@ -2,7 +2,7 @@ import streamlit as st
 import pandas as pd
 
 # Título de la aplicación
-st.title("Procesador de CSV - Manejo de Filas Excluidas")
+st.title("Procesador de CSV - Inclusión de Todas las Filas")
 
 # Subida del archivo CSV
 uploaded_file = st.file_uploader("Sube un archivo CSV", type="csv")
@@ -43,31 +43,24 @@ if uploaded_file is not None:
         # Convertir 'fecha_venta' a formato datetime
         df["fecha_venta"] = pd.to_datetime(df["fecha_venta"], errors="coerce", format='%d/%m/%Y')
 
-        # Identificar y mostrar filas excluidas
-        filas_excluidas = df[df["cantidad"].isnull() | df["fecha_venta"].isnull()]
-        st.subheader("Filas excluidas durante el procesamiento:")
-        st.dataframe(filas_excluidas)
+        # Completar valores nulos
+        df["cantidad"].fillna(0, inplace=True)
+        df["fecha_venta"].fillna(pd.Timestamp("2000-01-01"), inplace=True)
 
-        # Opcional: completar valores nulos en 'cantidad' con 0
-        if st.checkbox("Incluir filas excluidas con correcciones (cantidad=0, fecha=01/01/2000)"):
-            filas_excluidas["cantidad"].fillna(0, inplace=True)
-            filas_excluidas["fecha_venta"].fillna(pd.Timestamp("2000-01-01"), inplace=True)
-            df = pd.concat([df.drop(filas_excluidas.index), filas_excluidas])
-            st.write("Filas excluidas reintegradas con valores corregidos.")
-
-        # Filtrar filas válidas
-        df = df.dropna(subset=["cantidad", "fecha_venta"])
-        df = df[df["cantidad"] > 0]
+        # Incluir todas las filas, incluso las originalmente excluidas
+        st.write("Incluyendo todas las filas (valores nulos corregidos):")
+        st.dataframe(df)
 
         # Agrupar por fecha y SKU, sumando las cantidades
         grouped_data = df.groupby(["fecha_venta", "sku"])["cantidad"].sum().reset_index()
         grouped_data.columns = ["Fecha de Venta", "SKU", "Cantidad Total"]
 
-        # Verificar totales para SKU EC_237
-        total_original = df[df["sku"] == "EC_237"]["cantidad"].sum()
-        total_procesado = grouped_data[grouped_data["SKU"] == "EC_237"]["Cantidad Total"].sum()
-        st.write(f"Total original para SKU EC_237: {total_original}")
-        st.write(f"Total procesado para SKU EC_237: {total_procesado}")
+        # Verificar totales para SKU específico
+        sku_to_check = "EC_237"
+        total_original = df[df["sku"] == sku_to_check]["cantidad"].sum()
+        total_procesado = grouped_data[grouped_data["SKU"] == sku_to_check]["Cantidad Total"].sum()
+        st.write(f"Total original para SKU {sku_to_check}: {total_original}")
+        st.write(f"Total procesado para SKU {sku_to_check}: {total_procesado}")
 
         # Mostrar datos agrupados
         st.subheader("Datos Agrupados por Fecha y SKU:")
