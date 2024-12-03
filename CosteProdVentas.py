@@ -24,9 +24,9 @@ if uploaded_file is not None:
     try:
         # Renombrar columnas para que coincidan con las esperadas
         column_mapping = {
-            "cantidad del producto": "cantidad",
-            "fecha": "fecha_venta",
-            "sku": "sku"
+            "Fecha": "fecha_venta",
+            "SKU": "sku",
+            "Cantidad Producto": "cantidad"
         }
         df.rename(columns=column_mapping, inplace=True)
 
@@ -39,7 +39,7 @@ if uploaded_file is not None:
 
         # Convertir columnas a los tipos adecuados
         df["cantidad"] = pd.to_numeric(df["cantidad"], errors="coerce")
-        df["fecha_venta"] = pd.to_datetime(df["fecha_venta"], errors="coerce", format='%Y-%m-%d')
+        df["fecha_venta"] = pd.to_datetime(df["fecha_venta"], errors="coerce", format='%d/%m/%Y')
 
         # Agrupar por fecha_venta y SKU, sumando cantidades
         grouped_data = df.groupby(["fecha_venta", "sku"]).agg({
