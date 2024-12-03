@@ -2,14 +2,14 @@ import streamlit as st
 import pandas as pd
 
 # Título de la aplicación
-st.title("Procesador de CSV - Inclusión de Fechas Faltantes")
+st.title("Procesador de CSV - Inclusión de Fechas Faltantes y Agrupación por SKU")
 
 # Subida del archivo CSV
 uploaded_file = st.file_uploader("Sube un archivo CSV", type="csv")
 
 if uploaded_file is not None:
     try:
-        # Leer el archivo con encoding ISO-8859-1 y separador ';'
+        # Leer el archivo CSV con encoding ISO-8859-1 y separador ';'
         df = pd.read_csv(uploaded_file, sep=';', quotechar='"', encoding='ISO-8859-1')
         st.write("Archivo leído correctamente.")
         st.write("Total de filas originales:", len(df))
@@ -41,7 +41,7 @@ if uploaded_file is not None:
         # Convertir 'fecha_venta' a formato datetime
         df["fecha_venta"] = pd.to_datetime(df["fecha_venta"], errors="coerce", format='%d/%m/%Y')
 
-        # Identificar filas sin fecha y con fecha
+        # Dividir en filas con fecha y filas sin fecha
         filas_sin_fecha = df[df["fecha_venta"].isna()]
         filas_con_fecha = df[df["fecha_venta"].notna()]
 
@@ -49,16 +49,15 @@ if uploaded_file is not None:
         st.write(f"Filas sin fecha: {len(filas_sin_fecha)}")
 
         # Vincular las fechas faltantes usando 'Número de orden'
-        fecha_vinculada = filas_sin_fecha.merge(
-            filas_con_fecha[["Número de orden", "fecha_venta"]],
-            on="Número de orden",
-            how="left"
-        )
+        if not filas_sin_fecha.empty:
+            fecha_vinculada = filas_sin_fecha.merge(
+                filas_con_fecha[["Número de orden", "fecha_venta"]],
+                on="Número de orden",
+                how="left"
+            )
+            filas_sin_fecha["fecha_venta"] = fecha_vinculada["fecha_venta"]
 
-        # Actualizar las fechas de las filas sin fecha en el dataframe original
-        filas_sin_fecha["fecha_venta"] = fecha_vinculada["fecha_venta"]
-
-        # Combinar nuevamente el dataframe
+        # Combinar nuevamente las filas
         df_actualizado = pd.concat([filas_con_fecha, filas_sin_fecha])
 
         # Verificar si quedan filas sin fecha
@@ -72,7 +71,7 @@ if uploaded_file is not None:
         grouped_data = df_actualizado.groupby(["fecha_venta", "sku"])["cantidad"].sum().reset_index()
         grouped_data.columns = ["Fecha de Venta", "SKU", "Cantidad Total"]
 
-        # Verificar totales para SKU específico
+        # Verificar totales para un SKU específico
         sku_to_check = "EC_237"
         total_original = df[df["sku"] == sku_to_check]["cantidad"].sum()
         total_procesado = grouped_data[grouped_data["SKU"] == sku_to_check]["Cantidad Total"].sum()
