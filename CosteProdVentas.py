@@ -52,15 +52,21 @@ if uploaded_file is not None:
             how="left"
         )
 
-        # Actualizar el dataframe original con las fechas vinculadas
-        df.update(fecha_vinculada)
+        # Actualizar las fechas de las filas sin fecha en el dataframe original
+        filas_sin_fecha["fecha_venta"] = fecha_vinculada["fecha_venta"]
 
-        # Verificar que no queden filas sin fecha
-        if df["fecha_venta"].isna().any():
-            st.warning("Algunas filas aún no tienen fecha incluso después de la vinculación.")
+        # Combinar nuevamente el dataframe
+        df_actualizado = pd.concat([filas_con_fecha, filas_sin_fecha])
+
+        # Verificar si quedan filas sin fecha
+        filas_sin_fecha_final = df_actualizado[df_actualizado["fecha_venta"].isna()]
+        if not filas_sin_fecha_final.empty:
+            st.warning(f"Aún hay {len(filas_sin_fecha_final)} filas sin fecha después de la vinculación.")
+            st.write("Filas sin fecha:")
+            st.dataframe(filas_sin_fecha_final)
 
         # Agrupar por fecha y SKU, sumando las cantidades
-        grouped_data = df.groupby(["fecha_venta", "sku"])["cantidad"].sum().reset_index()
+        grouped_data = df_actualizado.groupby(["fecha_venta", "sku"])["cantidad"].sum().reset_index()
         grouped_data.columns = ["Fecha de Venta", "SKU", "Cantidad Total"]
 
         # Verificar totales para SKU específico
