@@ -35,12 +35,23 @@ if uploaded_file is not None:
         st.stop()
 
     try:
+        # Verificar valores únicos en 'sku'
+        st.write("Valores únicos en 'sku':")
+        st.write(df["sku"].unique())
+
+        # Inspeccionar filas relacionadas con SKU 237
+        st.subheader("Filas relacionadas con SKU 237 (incluyendo nulos o ceros):")
+        sku_237_df = df[df["sku"] == "237"]
+        st.dataframe(sku_237_df)
+
         # Convertir 'cantidad' a numérico
         df["cantidad"] = pd.to_numeric(df["cantidad"], errors="coerce")
+        st.write("Estadísticas de la columna 'cantidad':")
+        st.write(df["cantidad"].describe())
 
-        # Filtrar las filas con SKU igual a "237" para inspección
-        st.subheader("Filas originales para SKU 237")
-        st.dataframe(df[df["sku"] == "237"])
+        # Revisar filas con valores nulos en 'cantidad'
+        st.write("Filas con valores nulos o no válidos en 'cantidad':")
+        st.dataframe(df[df["cantidad"].isnull()])
 
         # Convertir 'fecha_venta' a formato datetime
         df["fecha_venta"] = pd.to_datetime(df["fecha_venta"], errors="coerce", format='%d/%m/%Y')
@@ -54,7 +65,7 @@ if uploaded_file is not None:
         grouped_data.columns = ["Fecha de Venta", "SKU", "Cantidad Total"]
 
         # Verificar totales para SKU 237
-        total_original = df[df["sku"] == "237"]["cantidad"].sum()
+        total_original = sku_237_df["cantidad"].sum()
         total_procesado = grouped_data[grouped_data["SKU"] == "237"]["Cantidad Total"].sum()
         st.write(f"Total original para SKU 237: {total_original}")
         st.write(f"Total procesado para SKU 237: {total_procesado}")
@@ -62,15 +73,6 @@ if uploaded_file is not None:
         # Mostrar los datos agrupados
         st.subheader("Datos Agrupados por Fecha y SKU:")
         st.dataframe(grouped_data)
-
-        # Exportar archivo intermedio para inspección
-        csv_intermedio = df[df["sku"] == "237"].to_csv(index=False).encode('utf-8')
-        st.download_button(
-            label="Descargar CSV Intermedio (SKU 237)",
-            data=csv_intermedio,
-            file_name="datos_intermedios_sku_237.csv",
-            mime="text/csv"
-        )
 
         # Exportar datos agrupados
         csv_final = grouped_data.to_csv(index=False).encode('utf-8')
