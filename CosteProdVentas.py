@@ -30,16 +30,16 @@ if uploaded_file is not None:
         }
         df.rename(columns=column_mapping, inplace=True)
 
+        # Mostrar columnas después de renombrar
+        st.write("Columnas después del renombramiento:", list(df.columns))
+
         # Validar columnas requeridas
         required_columns = ["fecha_venta", "sku", "cantidad"]
         missing_columns = [col for col in required_columns if col not in df.columns]
         if missing_columns:
             st.error(f"Faltan las siguientes columnas requeridas: {missing_columns}")
+            st.write("Sugerencia: Verifica que las columnas tengan exactamente estos nombres antes de renombrar:", list(column_mapping.keys()))
             st.stop()
-
-        # Mostrar vista previa después del renombramiento
-        st.write("Vista previa después del renombramiento de columnas:")
-        st.dataframe(df.head())
 
         # Convertir columnas a los tipos adecuados
         df["cantidad"] = pd.to_numeric(df["cantidad"], errors="coerce")
