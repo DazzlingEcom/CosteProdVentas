@@ -2,7 +2,7 @@ import streamlit as st
 import pandas as pd
 
 # Título de la aplicación
-st.title("Procesador de CSV - Inclusión Completa con Vinculación por Número de Orden")
+st.title("Procesador de CSV - Inclusión de Fechas Faltantes por Número de Orden")
 
 # Subida del archivo CSV
 uploaded_file = st.file_uploader("Sube un archivo CSV", type="csv")
@@ -45,18 +45,19 @@ if uploaded_file is not None:
         filas_sin_fecha = df[df["fecha_venta"].isna()]
         filas_con_fecha = df[df["fecha_venta"].notna()]
 
-        # Vincular filas sin fecha con filas con fecha mediante 'Número de orden'
-        filas_sin_fecha_vinculadas = filas_sin_fecha.merge(
+        # Vincular las fechas faltantes usando 'Número de orden'
+        fecha_vinculada = filas_sin_fecha.merge(
             filas_con_fecha[["Número de orden", "fecha_venta"]],
             on="Número de orden",
             how="left"
         )
 
-        # Actualizar las fechas en las filas originales
-        df.update(filas_sin_fecha_vinculadas)
+        # Actualizar el dataframe original con las fechas vinculadas
+        df.update(fecha_vinculada)
 
         # Verificar que no queden filas sin fecha
-        df["fecha_venta"].fillna(pd.Timestamp("2000-01-01"), inplace=True)
+        if df["fecha_venta"].isna().any():
+            st.warning("Algunas filas aún no tienen fecha incluso después de la vinculación.")
 
         # Agrupar por fecha y SKU, sumando las cantidades
         grouped_data = df.groupby(["fecha_venta", "sku"])["cantidad"].sum().reset_index()
