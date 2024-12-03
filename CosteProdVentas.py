@@ -12,7 +12,7 @@ if uploaded_file is not None:
         # Leer el archivo CSV con encoding ISO-8859-1 y separador ';'
         df = pd.read_csv(uploaded_file, sep=';', quotechar='"', encoding='ISO-8859-1')
         st.write("Archivo leído correctamente.")
-        st.write("Total de filas originales:", len(df))
+        st.write(f"Total de filas originales: {len(df)}")
     except Exception as e:
         st.error(f"No se pudo leer el archivo: {e}")
         st.stop()
@@ -41,33 +41,30 @@ if uploaded_file is not None:
         # Convertir 'fecha_venta' a formato datetime
         df["fecha_venta"] = pd.to_datetime(df["fecha_venta"], errors="coerce", format='%d/%m/%Y')
 
-        # Dividir en filas con fecha y filas sin fecha
+        # Dividir en filas con y sin fecha
         filas_sin_fecha = df[df["fecha_venta"].isna()]
         filas_con_fecha = df[df["fecha_venta"].notna()]
 
         st.write(f"Filas con fecha: {len(filas_con_fecha)}")
         st.write(f"Filas sin fecha: {len(filas_sin_fecha)}")
 
-        # Vincular las fechas faltantes usando 'Número de orden'
+        # Vincular fechas faltantes usando 'Número de orden'
         if not filas_sin_fecha.empty:
-            fecha_vinculada = filas_sin_fecha.merge(
+            filas_sin_fecha = filas_sin_fecha.merge(
                 filas_con_fecha[["Número de orden", "fecha_venta"]],
                 on="Número de orden",
-                how="left"
+                how="left",
+                suffixes=('', '_vinculada')
             )
-            filas_sin_fecha["fecha_venta"] = fecha_vinculada["fecha_venta"]
+
+            # Usar la fecha vinculada si está disponible
+            filas_sin_fecha["fecha_venta"] = filas_sin_fecha["fecha_venta"].fillna(filas_sin_fecha["fecha_venta_vinculada"])
+            filas_sin_fecha = filas_sin_fecha.drop(columns=["fecha_venta_vinculada"])
 
         # Combinar nuevamente las filas
         df_actualizado = pd.concat([filas_con_fecha, filas_sin_fecha])
 
-        # Verificar si quedan filas sin fecha
-        filas_sin_fecha_final = df_actualizado[df_actualizado["fecha_venta"].isna()]
-        if not filas_sin_fecha_final.empty:
-            st.warning(f"Aún hay {len(filas_sin_fecha_final)} filas sin fecha después de la vinculación.")
-            st.write("Filas sin fecha:")
-            st.dataframe(filas_sin_fecha_final)
-
-        # Asegurarse de que no haya valores NaT en la columna 'fecha_venta'
+        # Filtrar filas con valores válidos en 'fecha_venta'
         df_actualizado = df_actualizado[df_actualizado["fecha_venta"].notna()]
 
         # Agrupar por fecha y SKU, sumando las cantidades
