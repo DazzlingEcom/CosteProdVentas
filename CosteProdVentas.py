@@ -67,6 +67,9 @@ if uploaded_file is not None:
             st.write("Filas sin fecha:")
             st.dataframe(filas_sin_fecha_final)
 
+        # Asegurarse de que no haya valores NaT en la columna 'fecha_venta'
+        df_actualizado = df_actualizado[df_actualizado["fecha_venta"].notna()]
+
         # Agrupar por fecha y SKU, sumando las cantidades
         grouped_data = df_actualizado.groupby(["fecha_venta", "sku"])["cantidad"].sum().reset_index()
         grouped_data.columns = ["Fecha de Venta", "SKU", "Cantidad Total"]
