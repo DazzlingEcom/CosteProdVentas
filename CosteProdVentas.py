@@ -26,7 +26,7 @@ if uploaded_file is not None:
         column_mapping = {
             "Fecha": "fecha_venta",
             "SKU": "sku",
-            "Cantidad Producto": "cantidad"
+            "Cantidad del producto": "cantidad"  # Ajuste aquí
         }
         df.rename(columns=column_mapping, inplace=True)
 
