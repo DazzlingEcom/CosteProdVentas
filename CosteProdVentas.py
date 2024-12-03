@@ -39,9 +39,9 @@ if uploaded_file is not None:
         st.write("Valores únicos en 'sku':")
         st.write(df["sku"].unique())
 
-        # Filtrar filas relacionadas con SKU "237"
-        st.subheader("Filas relacionadas con SKU 237 (incluyendo nulos o ceros):")
-        sku_237_df = df[df["sku"] == "237"]
+        # Filtrar filas relacionadas con SKU "EC_237"
+        st.subheader("Filas relacionadas con SKU EC_237 (incluyendo nulos o ceros):")
+        sku_237_df = df[df["sku"] == "EC_237"]
         st.dataframe(sku_237_df)
 
         # Convertir 'cantidad' a numérico
@@ -64,11 +64,11 @@ if uploaded_file is not None:
         grouped_data = df.groupby(["fecha_venta", "sku"])["cantidad"].sum().reset_index()
         grouped_data.columns = ["Fecha de Venta", "SKU", "Cantidad Total"]
 
-        # Verificar totales para SKU "237"
+        # Verificar totales para SKU "EC_237"
         total_original = sku_237_df["cantidad"].sum()
-        total_procesado = grouped_data[grouped_data["SKU"] == "237"]["Cantidad Total"].sum()
-        st.write(f"Total original para SKU 237: {total_original}")
-        st.write(f"Total procesado para SKU 237: {total_procesado}")
+        total_procesado = grouped_data[grouped_data["SKU"] == "EC_237"]["Cantidad Total"].sum()
+        st.write(f"Total original para SKU EC_237: {total_original}")
+        st.write(f"Total procesado para SKU EC_237: {total_procesado}")
 
         # Mostrar datos agrupados
         st.subheader("Datos Agrupados por Fecha y SKU:")
