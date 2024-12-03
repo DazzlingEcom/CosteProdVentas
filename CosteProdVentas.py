@@ -12,6 +12,7 @@ if uploaded_file is not None:
         # Detectar y leer el archivo con encoding 'ISO-8859-1' y separador ';'
         df = pd.read_csv(uploaded_file, sep=';', quotechar='"', encoding='ISO-8859-1')
         st.write("Archivo leído correctamente.")
+        st.write("Total de filas originales:", len(df))
     except Exception as e:
         st.error(f"No se pudo leer el archivo: {e}")
         st.stop()
