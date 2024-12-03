@@ -2,7 +2,7 @@ import streamlit as st
 import pandas as pd
 
 # Título de la aplicación
-st.title("Procesador de CSV - Inclusión de Fechas Faltantes por Número de Orden")
+st.title("Procesador de CSV - Inclusión de Fechas Faltantes")
 
 # Subida del archivo CSV
 uploaded_file = st.file_uploader("Sube un archivo CSV", type="csv")
@@ -44,6 +44,9 @@ if uploaded_file is not None:
         # Identificar filas sin fecha y con fecha
         filas_sin_fecha = df[df["fecha_venta"].isna()]
         filas_con_fecha = df[df["fecha_venta"].notna()]
+
+        st.write(f"Filas con fecha: {len(filas_con_fecha)}")
+        st.write(f"Filas sin fecha: {len(filas_sin_fecha)}")
 
         # Vincular las fechas faltantes usando 'Número de orden'
         fecha_vinculada = filas_sin_fecha.merge(
