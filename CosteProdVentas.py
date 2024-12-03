@@ -9,7 +9,7 @@ uploaded_file = st.file_uploader("Sube un archivo CSV", type="csv")
 
 if uploaded_file is not None:
     try:
-        # Detectar y leer el archivo con encoding 'ISO-8859-1' y separador ';'
+        # Leer el archivo con encoding ISO-8859-1 y separador ';'
         df = pd.read_csv(uploaded_file, sep=';', quotechar='"', encoding='ISO-8859-1')
         st.write("Archivo leído correctamente.")
         st.write("Total de filas originales:", len(df))
@@ -17,7 +17,7 @@ if uploaded_file is not None:
         st.error(f"No se pudo leer el archivo: {e}")
         st.stop()
 
-    # Mostrar columnas detectadas y vista previa
+    # Mostrar columnas detectadas
     st.write("Columnas detectadas:", list(df.columns))
     st.write("Vista previa del archivo:")
     st.dataframe(df.head())
@@ -35,11 +35,11 @@ if uploaded_file is not None:
         st.stop()
 
     try:
-        # Verificar valores únicos en 'sku'
+        # Revisar valores únicos en 'sku'
         st.write("Valores únicos en 'sku':")
         st.write(df["sku"].unique())
 
-        # Inspeccionar filas relacionadas con SKU 237
+        # Filtrar filas relacionadas con SKU "237"
         st.subheader("Filas relacionadas con SKU 237 (incluyendo nulos o ceros):")
         sku_237_df = df[df["sku"] == "237"]
         st.dataframe(sku_237_df)
@@ -56,7 +56,7 @@ if uploaded_file is not None:
         # Convertir 'fecha_venta' a formato datetime
         df["fecha_venta"] = pd.to_datetime(df["fecha_venta"], errors="coerce", format='%d/%m/%Y')
 
-        # Filtrar filas con valores nulos o cero en 'cantidad'
+        # Filtrar filas con valores válidos en 'cantidad'
         df = df.dropna(subset=["cantidad", "fecha_venta"])
         df = df[df["cantidad"] > 0]
 
@@ -64,13 +64,13 @@ if uploaded_file is not None:
         grouped_data = df.groupby(["fecha_venta", "sku"])["cantidad"].sum().reset_index()
         grouped_data.columns = ["Fecha de Venta", "SKU", "Cantidad Total"]
 
-        # Verificar totales para SKU 237
+        # Verificar totales para SKU "237"
         total_original = sku_237_df["cantidad"].sum()
         total_procesado = grouped_data[grouped_data["SKU"] == "237"]["Cantidad Total"].sum()
         st.write(f"Total original para SKU 237: {total_original}")
         st.write(f"Total procesado para SKU 237: {total_procesado}")
 
-        # Mostrar los datos agrupados
+        # Mostrar datos agrupados
         st.subheader("Datos Agrupados por Fecha y SKU:")
         st.dataframe(grouped_data)
 
