@@ -2,7 +2,7 @@ import streamlit as st
 import pandas as pd
 
 # Título de la aplicación
-st.title("Procesador de CSV - Análisis por SKU y Fecha")
+st.title("Procesador de CSV - Análisis de Discrepancias")
 
 # Subida del archivo CSV
 uploaded_file = st.file_uploader("Sube un archivo CSV", type="csv")
@@ -40,7 +40,7 @@ if uploaded_file is not None:
         st.write(df["sku"].unique())
 
         # Filtrar filas relacionadas con SKU "EC_237"
-        st.subheader("Filas relacionadas con SKU EC_237 (incluyendo nulos o ceros):")
+        st.subheader("Filas relacionadas con SKU EC_237:")
         sku_237_df = df[df["sku"] == "EC_237"]
         st.dataframe(sku_237_df)
 
@@ -51,12 +51,18 @@ if uploaded_file is not None:
 
         # Revisar filas con valores nulos en 'cantidad'
         st.write("Filas con valores nulos o no válidos en 'cantidad':")
-        st.dataframe(df[df["cantidad"].isnull()])
+        nulos_cantidad = df[df["cantidad"].isnull()]
+        st.dataframe(nulos_cantidad)
 
         # Convertir 'fecha_venta' a formato datetime
         df["fecha_venta"] = pd.to_datetime(df["fecha_venta"], errors="coerce", format='%d/%m/%Y')
 
-        # Filtrar filas con valores válidos en 'cantidad'
+        # Revisar filas con valores nulos en 'fecha_venta'
+        st.write("Filas con valores nulos en 'fecha_venta':")
+        nulos_fecha = df[df["fecha_venta"].isnull()]
+        st.dataframe(nulos_fecha)
+
+        # Filtrar filas válidas
         df = df.dropna(subset=["cantidad", "fecha_venta"])
         df = df[df["cantidad"] > 0]
 
@@ -69,6 +75,11 @@ if uploaded_file is not None:
         total_procesado = grouped_data[grouped_data["SKU"] == "EC_237"]["Cantidad Total"].sum()
         st.write(f"Total original para SKU EC_237: {total_original}")
         st.write(f"Total procesado para SKU EC_237: {total_procesado}")
+
+        # Identificar filas excluidas del procesamiento
+        excluded_rows = sku_237_df[~sku_237_df.index.isin(df.index)]
+        st.write("Filas excluidas durante el procesamiento:")
+        st.dataframe(excluded_rows)
 
         # Mostrar datos agrupados
         st.subheader("Datos Agrupados por Fecha y SKU:")
