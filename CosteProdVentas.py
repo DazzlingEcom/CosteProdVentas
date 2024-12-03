@@ -2,7 +2,7 @@ import streamlit as st
 import pandas as pd
 
 # Título de la aplicación
-st.title("Procesador de CSV - Inclusión de Todas las Filas")
+st.title("Procesador de CSV - Inclusión Completa con Vinculación por Número de Orden")
 
 # Subida del archivo CSV
 uploaded_file = st.file_uploader("Sube un archivo CSV", type="csv")
@@ -28,7 +28,7 @@ if uploaded_file is not None:
     st.write("Columnas después del renombramiento:", list(df.columns))
 
     # Validar que las columnas requeridas existan
-    required_columns = ["fecha_venta", "sku", "cantidad"]
+    required_columns = ["fecha_venta", "sku", "cantidad", "Número de orden"]
     missing_columns = [col for col in required_columns if col not in df.columns]
     if missing_columns:
         st.error(f"Faltan las siguientes columnas requeridas: {missing_columns}")
@@ -37,19 +37,26 @@ if uploaded_file is not None:
     try:
         # Convertir 'cantidad' a numérico
         df["cantidad"] = pd.to_numeric(df["cantidad"], errors="coerce")
-        st.write("Estadísticas de la columna 'cantidad':")
-        st.write(df["cantidad"].describe())
 
         # Convertir 'fecha_venta' a formato datetime
         df["fecha_venta"] = pd.to_datetime(df["fecha_venta"], errors="coerce", format='%d/%m/%Y')
 
-        # Completar valores nulos
-        df["cantidad"].fillna(0, inplace=True)
-        df["fecha_venta"].fillna(pd.Timestamp("2000-01-01"), inplace=True)
+        # Identificar filas sin fecha y con fecha
+        filas_sin_fecha = df[df["fecha_venta"].isna()]
+        filas_con_fecha = df[df["fecha_venta"].notna()]
 
-        # Incluir todas las filas, incluso las originalmente excluidas
-        st.write("Incluyendo todas las filas (valores nulos corregidos):")
-        st.dataframe(df)
+        # Vincular filas sin fecha con filas con fecha mediante 'Número de orden'
+        filas_sin_fecha_vinculadas = filas_sin_fecha.merge(
+            filas_con_fecha[["Número de orden", "fecha_venta"]],
+            on="Número de orden",
+            how="left"
+        )
+
+        # Actualizar las fechas en las filas originales
+        df.update(filas_sin_fecha_vinculadas)
+
+        # Verificar que no queden filas sin fecha
+        df["fecha_venta"].fillna(pd.Timestamp("2000-01-01"), inplace=True)
 
         # Agrupar por fecha y SKU, sumando las cantidades
         grouped_data = df.groupby(["fecha_venta", "sku"])["cantidad"].sum().reset_index()
