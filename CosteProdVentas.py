@@ -53,6 +53,11 @@ if uploaded_file is not None:
 
         # Renombrar columnas para claridad
         grouped_data.columns = ["Fecha de Venta", "SKU", "Cantidad Total"]
+        
+        total_original = df[df["sku"] == "237"]["cantidad"].sum()
+        total_procesado = grouped_data[grouped_data["SKU"] == "237"]["Cantidad Total"].sum()
+        st.write(f"Total original para SKU 237: {total_original}")
+        st.write(f"Total procesado para SKU 237: {total_procesado}")
 
         # Mostrar los datos procesados
         st.subheader("Cantidad de Productos por SKU y Fecha:")
