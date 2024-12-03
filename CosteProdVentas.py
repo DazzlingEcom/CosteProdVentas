@@ -37,6 +37,10 @@ if uploaded_file is not None:
             st.error(f"Faltan las siguientes columnas requeridas: {missing_columns}")
             st.stop()
 
+        # Mostrar vista previa después del renombramiento
+        st.write("Vista previa después del renombramiento de columnas:")
+        st.dataframe(df.head())
+
         # Convertir columnas a los tipos adecuados
         df["cantidad"] = pd.to_numeric(df["cantidad"], errors="coerce")
         df["fecha_venta"] = pd.to_datetime(df["fecha_venta"], errors="coerce", format='%d/%m/%Y')
